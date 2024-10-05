@@ -76,9 +76,10 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 app.use((req, res, next) => {
+  //  console.log("Current User: ", req.user); //check only for debug
   res.locals.success = req.flash("success");
   res.locals.error = req.flash("error");
-  res.locals.currUser = req.user;
+  res.locals.currUser = req.user; // Passport.js stores the logged-in user in `req.user`
   next();
 });
 
