@@ -6,6 +6,7 @@ const listingController = require("../controllers/listings.js");
 const multer = require("multer");
 const { storage } = require("../cloudConfig.js");
 const upload = multer({ storage });
+const { reserveListing } = require("../controllers/listings");
 
 router
   .route("/")
@@ -41,10 +42,7 @@ router.get(
   wrapAsync(listingController.renderEditForm)
 );
 
-router.get(
-  "/:id/reservelisting",
-  isLoggedIn,
-  wrapAsync(listingController.reserveListing)
-);
+// Reserve route
+router.post("/:id/reserve", reserveListing); // Route for reserving a listing
 
 module.exports = router;

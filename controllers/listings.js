@@ -2,6 +2,7 @@ const Listing = require("../models/listing");
 const mbxGeocoding = require("@mapbox/mapbox-sdk/services/geocoding");
 const mapToken = process.env.MAP_TOKEN;
 const geoCodingClient = mbxGeocoding({ accessToken: mapToken });
+const nodemailer = require("nodemailer");
 
 module.exports.index = async (req, res) => {
   let allListings = await Listing.find();
@@ -179,8 +180,61 @@ module.exports.destroyListing = async (req, res) => {
   res.redirect("/listings");
 };
 
+// Configure nodemailer transporter
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER, // Your Gmail email
+    pass: process.env.EMAIL_PASS, // Your Gmail app password
+  },
+});
+
+// Utility function to send email
+const sendMail = async (to, subject, text, html) => {
+  try {
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER, // sender address
+      to, // list of receivers
+      subject, // Subject line
+      text, // plain text body
+      html, // html body
+    });
+  } catch (error) {
+    console.error("Error sending email:", error);
+  }
+};
+
 module.exports.reserveListing = async (req, res) => {
-  let { id } = req.params;
-  req.flash("success", "Reservation Details sent to your Email!");
-  res.redirect(`/listings/${id}`);
+  try {
+    const listingId = req.params.id;
+    const listing = await Listing.findById(listingId);
+
+    if (!listing) {
+      req.flash("error", "Listing not found!");
+      return res.redirect("/listings");
+    }
+
+    const userEmail = req.body.email;
+
+    // Send confirmation email
+    await sendMail(
+      userEmail,
+      `Reservation Confirmation - ${listing.title}`,
+      `Your reservation for ${listing.title} has been confirmed.`,
+      `<p>Your reservation for <strong>${listing.title}</strong> has been confirmed.</p>`
+    );
+
+    req.flash(
+      "success",
+      `Reservation for ${listing.title} successful! A confirmation email has been sent to ${userEmail}.`
+    );
+    res.redirect(`/listings/${listingId}`);
+  } catch (error) {
+    console.error("Error processing reservation:", error);
+    req.flash(
+      "error",
+      "Something went wrong with your reservation. Please try again later."
+    );
+    res.redirect("/listings");
+  }
 };
