@@ -1,0 +1,191 @@
+<% layout("/layouts/boilerplate") %>
+
+<div class="container mt-5">
+  <h2 class="mb-4">Book <%= listing.title %></h2>
+
+  <form action="/listings/<%= listing._id %>/book" method="POST">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="userEmail">Your Email:</label>
+          <input
+            type="email"
+            class="form-control"
+            id="userEmail"
+            name="userEmail"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="phoneNumber">Phone Number:</label>
+          <input
+            type="tel"
+            class="form-control"
+            id="phoneNumber"
+            name="bookingDetails[phoneNumber]"
+            required
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="checkInDate">Check-in Date:</label>
+          <input
+            type="date"
+            class="form-control"
+            id="checkInDate"
+            name="bookingDetails[checkInDate]"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="checkOutDate">Check-out Date:</label>
+          <input
+            type="date"
+            class="form-control"
+            id="checkOutDate"
+            name="bookingDetails[checkOutDate]"
+            required
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="guests">Number of Guests:</label>
+      <input
+        type="number"
+        class="form-control"
+        id="guests"
+        name="bookingDetails[guests]"
+        min="1"
+        required
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="specialRequests">Special Requests:</label>
+      <textarea
+        class="form-control"
+        id="specialRequests"
+        name="bookingDetails[specialRequests]"
+        rows="3"
+      ></textarea>
+    </div>
+
+    <fieldset class="form-group">
+      <legend>Payment Method:</legend>
+      <div class="form-check">
+        <input
+          type="radio"
+          class="form-check-input"
+          id="payOnline"
+          name="bookingDetails[paymentMethod]"
+          value="payOnline"
+          required
+        />
+        <label class="form-check-label" for="payOnline">Pay Online</label>
+      </div>
+      <div class="form-check">
+        <input
+          type="radio"
+          class="form-check-input"
+          id="payAtHotel"
+          name="bookingDetails[paymentMethod]"
+          value="payAtHotel"
+        />
+        <label class="form-check-label" for="payAtHotel">Pay at Hotel</label>
+      </div>
+    </fieldset>
+
+    <div class="payment-info" id="paymentInfo" style="display:none;">
+      <div class="form-group">
+        <label for="paymentOption">Choose Payment Option:</label>
+        <select class="form-control" id="paymentOption" name="bookingDetails[onlinePaymentOption]">
+          <option value="" disabled selected>Select a payment option</option>
+          <option value="creditCard">Credit Card</option>
+          <option value="paypal">PayPal</option>
+          <option value="bankTransfer">Bank Transfer</option>
+        </select>
+      </div>
+
+      <div id="creditCardInfo" style="display:none;">
+        <div class="form-group">
+          <label for="cardNumber">Card Number:</label>
+          <input
+            type="text"
+            class="form-control"
+            id="cardNumber"
+            name="bookingDetails[cardNumber]"
+            placeholder="Enter your card number"
+          />
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="cardExpiry">Card Expiry Date (MM/YY):</label>
+              <input
+                type="text"
+                class="form-control"
+                id="cardExpiry"
+                name="bookingDetails[cardExpiry]"
+                placeholder="MM/YY"
+              />
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="form-group">
+              <label for="cardCvc">Card CVC:</label>
+              <input
+                type="text"
+                class="form-control"
+                id="cardCvc"
+                name="bookingDetails[cardCvc]"
+                placeholder="CVC"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Confirm Booking</button>
+  </form>
+</div>
+
+<script>
+  // Toggle payment method fields based on selection
+  document.querySelectorAll('input[name="bookingDetails[paymentMethod]"]').forEach((input) => {
+    input.addEventListener('change', function() {
+      const paymentInfo = document.getElementById('paymentInfo');
+      const creditCardInfo = document.getElementById('creditCardInfo');
+      if (this.value === 'payOnline') {
+        paymentInfo.style.display = 'block';
+      } else {
+        paymentInfo.style.display = 'none';
+        creditCardInfo.style.display = 'none'; // Hide credit card info if paying at hotel
+      }
+    });
+  });
+
+  // Show credit card info if credit card option is selected
+  document.getElementById('paymentOption').addEventListener('change', function() {
+    const creditCardInfo = document.getElementById('creditCardInfo');
+    if (this.value === 'creditCard') {
+      creditCardInfo.style.display = 'block';
+    } else {
+      creditCardInfo.style.display = 'none';
+    }
+  });
+</script>

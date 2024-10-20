@@ -180,12 +180,12 @@ module.exports.destroyListing = async (req, res) => {
   res.redirect("/listings");
 };
 
-// Configure nodemailer transporter
+// Mail transporter configuration
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER, // Your Gmail email
-    pass: process.env.EMAIL_PASS, // Your Gmail app password
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
 });
 
@@ -193,48 +193,151 @@ const transporter = nodemailer.createTransport({
 const sendMail = async (to, subject, text, html) => {
   try {
     await transporter.sendMail({
-      from: process.env.EMAIL_USER, // sender address
-      to, // list of receivers
-      subject, // Subject line
-      text, // plain text body
-      html, // html body
+      from: process.env.EMAIL_USER,
+      to,
+      subject,
+      text,
+      html,
     });
   } catch (error) {
     console.error("Error sending email:", error);
   }
 };
 
-module.exports.reserveListing = async (req, res) => {
+// Render the booking form
+module.exports.renderBookingForm = async (req, res) => {
+  const { id } = req.params;
+  const listing = await Listing.findById(id);
+  if (!listing) {
+    req.flash("error", "Listing not found!");
+    return res.redirect("/listings");
+  }
+  res.render("listings/booking.ejs", { listing });
+};
+
+// Process the booking request
+module.exports.bookListing = async (req, res) => {
   try {
-    const listingId = req.params.id;
-    const listing = await Listing.findById(listingId);
+    const listingId = req.params.id; // Get listing ID from the URL parameter
+    const listing = await Listing.findById(listingId); // Find the listing by ID
+
+    // Get user email and booking details from the form
+    const userEmail = req.body.userEmail; // Get userEmail directly from form submission
+    const bookingDetails = req.body.bookingDetails;
 
     if (!listing) {
       req.flash("error", "Listing not found!");
       return res.redirect("/listings");
     }
 
-    const userEmail = req.body.email;
+    // Prepare booking confirmation email for the user
+    const userEmailBody = `
+      <html>
+        <head>
+          <style>
+            /* Styles omitted for brevity */
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>Booking Confirmation</h1>
+            <p>Dear <strong>${userEmail}</strong>,</p>
+            <p>Thank you for booking with us! Here are your booking details:</p>
+            <p>Your booking for <strong>${
+              listing.title
+            }</strong> has been confirmed.</p>
+            <div class="details">
+              <h2>Booking Details:</h2>
+              <ul>
+                <li><strong>Check-in Date:</strong> ${
+                  bookingDetails.checkInDate
+                }</li>
+                <li><strong>Check-out Date:</strong> ${
+                  bookingDetails.checkOutDate
+                }</li>
+                <li><strong>Number of Guests:</strong> ${
+                  bookingDetails.guests
+                }</li>
+                <li><strong>Phone Number:</strong> ${
+                  bookingDetails.phoneNumber
+                }</li>
+                <li><strong>Payment Method:</strong> ${
+                  bookingDetails.paymentMethod === "payAtHotel"
+                    ? "Pay at Hotel"
+                    : bookingDetails.onlinePaymentOption
+                }</li>
+                <li><strong>Special Requests:</strong> ${
+                  bookingDetails.specialRequests || "None"
+                }</li>
+              </ul>
+              <p>We look forward to welcoming you!</p>
+            </div>
+            <p>If you have any questions, feel free to <a href="mailto:support@example.com">contact our support team</a>.</p>
+          </div>
+        </body>
+      </html>
+    `;
 
-    // Send confirmation email
+    // Send confirmation email to the user
     await sendMail(
       userEmail,
-      `Reservation Confirmation - ${listing.title}`,
-      `Your reservation for ${listing.title} has been confirmed.`,
-      `<p>Your reservation for <strong>${listing.title}</strong> has been confirmed.</p>`
+      `Booking Confirmation - ${listing.title}`,
+      `Your booking for ${listing.title} has been confirmed.`,
+      userEmailBody
     );
 
+    // Prepare booking notification email for the owner
+    const ownerEmailBody = `
+      <html>
+        <body>
+          <p>Dear ${listing.owner.name},</p>
+          <p>You have received a new booking for <strong>${
+            listing.title
+          }</strong>.</p>
+          <h2>Booking Details:</h2>
+          <ul>
+            <li><strong>User Email:</strong> ${userEmail}</li>
+            <li><strong>Check-in Date:</strong> ${
+              bookingDetails.checkInDate
+            }</li>
+            <li><strong>Check-out Date:</strong> ${
+              bookingDetails.checkOutDate
+            }</li>
+            <li><strong>Number of Guests:</strong> ${bookingDetails.guests}</li>
+            <li><strong>Phone Number:</strong> ${
+              bookingDetails.phoneNumber
+            }</li>
+            <li><strong>Payment Method:</strong> ${
+              bookingDetails.paymentMethod === "payAtHotel"
+                ? "Pay at Hotel"
+                : bookingDetails.onlinePaymentOption
+            }</li>
+            <li><strong>Special Requests:</strong> ${
+              bookingDetails.specialRequests || "None"
+            }</li>
+          </ul>
+          <p>Thank you for using our service!</p>
+        </body>
+      </html>
+    `;
+
+    // Send booking notification email to the listing owner
+    await sendMail(
+      listing.owner.email,
+      `New Booking for - ${listing.title}`,
+      `You have a new booking for ${listing.title}.`,
+      ownerEmailBody
+    );
+
+    // Flash success message and redirect
     req.flash(
       "success",
-      `Reservation for ${listing.title} successful! A confirmation email has been sent to ${userEmail}.`
+      "Booking successful! Confirmation email has been sent."
     );
     res.redirect(`/listings/${listingId}`);
   } catch (error) {
-    console.error("Error processing reservation:", error);
-    req.flash(
-      "error",
-      "Something went wrong with your reservation. Please try again later."
-    );
+    console.error(error);
+    req.flash("error", "Something went wrong. Please try again.");
     res.redirect("/listings");
   }
 };

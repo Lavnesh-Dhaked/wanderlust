@@ -42,7 +42,7 @@ router.get(
   wrapAsync(listingController.renderEditForm)
 );
 
-// Reserve route
-router.post("/:id/reserve", reserveListing); // Route for reserving a listing
 
+router.get("/:id/book", isLoggedIn, listingController.renderBookingForm); // Render booking form
+router.post("/:id/book", isLoggedIn, listingController.bookListing); // Handle booking request
 module.exports = router;
