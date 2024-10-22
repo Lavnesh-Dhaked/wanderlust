@@ -5,125 +5,192 @@
 </script>
 
 <body>
-  <div class="container">
+  <div class="container mt-5">
     <div class="row">
       <div class="col-lg-8 col-md-10 col-sm-12 mx-auto">
-        <div class="mt-3">
-          <h3 class="listing-title text-center"><%= listing.title %></h3>
+        <div class="mt-3 text-center">
+          <h3 class="listing-title text-primary"><%= listing.title %></h3>
         </div>
-        <div class="card show-card listing-card mb-4 shadow-sm">
-          <img
-            src="<%= listing.image.url %>"
-            class="card-img-top show-img"
-            alt="listing-img"
-          />
-          <div class="listing-card-body mt-3">
-            <p class="listing-card-text">
-              <b>Hosted By: </b><i><%= listing.owner.username %></i>
+        
+        <!-- Listing Card -->
+        <div class="card show-card listing-card border-0 shadow-lg rounded">
+          <img src="<%= listing.image.url %>" class="card-img-top show-img rounded-top" alt="listing-img" />
+          <div class="card-body mt-3">
+            <h5 class="card-title text-primary"><%= listing.title %></h5>
+            <p class="card-text mb-1">
+              <strong>Hosted By:</strong> <i><%= listing.owner.username %></i>
             </p>
-            <p class="listing-card-text">
-              <b>Description: </b><%= listing.description %>
+            <p class="card-text mb-1">
+              <strong>Description:</strong> <%= listing.description %>
             </p>
-            <p class="listing-card-text">
-              <b>Cost: </b>&#8377; <%= listing.price.toLocaleString("en-In") %>
+            <p class="card-text mb-1">
+              <strong>Cost:</strong> &#8377; <%= listing.price.toLocaleString("en-In") %>
             </p>
-            <p class="listing-card-text">
-              <b>Category: </b><%= listing.category %>
+            <p class="card-text mb-1">
+              <strong>Category:</strong>
+              <span class="badge bg-secondary"><%= listing.category %></span>
             </p>
-            <p class="listing-card-text">
-              <b>Location: </b><i class="fa-solid fa-location-dot"></i> <%= listing.location %>
+            <p class="card-text mb-1">
+              <strong>Location:</strong>
+              <i class="fa-solid fa-location-dot">&nbsp;</i><%= listing.location %>
             </p>
-            <p class="listing-card-text">
-              <b>Country: </b><i class="fa-solid fa-globe"></i> <%= listing.country %>
+            <p class="card-text mb-1">
+              <strong>Country:</strong>
+              <i class="fa-solid fa-globe">&nbsp;</i><%= listing.country %>
             </p>
           </div>
-        </div>
-
-        <!-- Reservation Form -->
-        <div class="text-center">
-          <a href="/listings/<%= listing._id %>/book" class="btn btn-success mt-3">Book Now</a>
-        </div>
-
-        <!-- Edit/Delete Buttons for Owner -->
-        <% if(currUser && currUser._id.equals(listing.owner._id)) { %>
-        <div class="show-btns d-flex flex-column flex-md-row justify-content-center gap-2 gap-md-3 mt-3">
-          <a href="/listings/<%= listing._id %>/edit" class="btn btn-danger mb-2 mb-md-0">Edit this Listing</a>
-          <form action="/listings/<%= listing._id %>?_method=DELETE" method="post">
-            <button type="submit" class="btn btn-dark">Delete this Listing</button>
-          </form>
-        </div>
-        <% } %>
-
-        <!-- Review Form for Logged-in Users -->
-        <% if(currUser) { %>
-        <div class="col-12">
-          <hr />
-        </div>
-
-        <div class="mt-3">
-          <h4>Leave a Review</h4>
-          <form class="mt-3 needs-validation" novalidate action="/listings/<%= listing._id %>/reviews" method="POST">
-            <div class="mt-3">
-              <label class="form-label" for="rating">Rating</label>
-              <fieldset class="starability-slot">
-                <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1" checked aria-label="No rating." />
-                <input type="radio" id="first-rate1" name="review[rating]" value="1" />
-                <label for="first-rate1" title="Terrible">1 star</label>
-                <input type="radio" id="first-rate2" name="review[rating]" value="2" />
-                <label for="first-rate2" title="Not good">2 stars</label>
-                <input type="radio" id="first-rate3" name="review[rating]" value="3" />
-                <label for="first-rate3" title="Average">3 stars</label>
-                <input type="radio" id="first-rate4" name="review[rating]" value="4" />
-                <label for="first-rate4" title="Very good">4 stars</label>
-                <input type="radio" id="first-rate5" name="review[rating]" value="5" />
-                <label for="first-rate5" title="Amazing">5 stars</label>
-              </fieldset>
-            </div>
-            <div class="mb-3">
-              <label class="form-label" for="comment">Comments</label>
-              <textarea class="form-control" name="review[comment]" id="comment" cols="30" rows="5" required></textarea>
-              <div class="invalid-feedback">Please add some comments for review</div>
-            </div>
-            <div class="show-btns d-flex flex-column flex-md-row justify-content-center gap-2 gap-md-3">
-              <button class="btn btn-dark">Submit</button>
-            </div>
-          </form>
-        </div>
-        <% } %>
-
-        <!-- All Reviews -->
-        <% if(listing.reviews.length > 0) { %>
-        <div class="mt-3">
-          <h4>All Reviews</h4>
-          <div class="row justify-content-left">
-            <% for (let review of listing.reviews) { %>
-            <div class="col-12 col-md-6 col-lg-6 d-flex mt-3">
-              <div class="card mb-1 flex-grow-1">
-                <div class="card-body d-flex flex-column justify-content-between">
-                  <div>
-                    <h5 class="card-title">
-                      <i class="fa-solid fa-circle-user fa-lg" style="color: #ff0000">&nbsp;</i>
-                      <i> <%= review.author.username %> </i>
-                    </h5>
-                    <p class="starability-result card-text" data-rating="<%= review.rating %>"></p>
-                    <p class="card-text review-comment"><%= review.comment %></p>
-                  </div>
-                  <% if(currUser && currUser._id.equals(review.author._id)) { %>
-                  <form action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE" method="POST">
-                    <button class="btn btn-sm btn-danger mt-2">Delete</button>
-                  </form>
-                  <% } %>
-                </div>
+          
+          <!-- Action Buttons -->
+          <div class="card-footer d-flex justify-content-between align-items-center">
+            <a href="/listings/<%= listing._id %>/book" class="btn btn-success">Book Now</a>
+            <% if (currUser && currUser._id.equals(listing.owner._id)) { %>
+              <div>
+                <a href="/listings/<%= listing._id %>/edit" class="btn btn-warning me-2">Edit</a>
+                <form action="/listings/<%= listing._id %>?_method=DELETE" method="post" class="d-inline">
+                  <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
               </div>
-            </div>
             <% } %>
           </div>
         </div>
+
+        <!-- Edit and Delete Buttons for Owner -->
+        <% if (currUser && currUser._id.equals(listing.owner._id)) { %>
+          <div class="show-btns d-flex flex-column flex-md-row justify-content-center gap-2 gap-md-3 mt-3">
+            <a href="/listings/<%= listing._id %>/edit" class="btn btn-danger mb-2 mb-md-0">Edit this Listing</a>
+            <form action="/listings/<%= listing._id %>?_method=DELETE" method="post">
+              <button type="submit" class="btn btn-dark">Delete this Listing</button>
+            </form>
+          </div>
         <% } %>
 
-        <!-- Other sections (Amenities, Map, etc.)... -->
+        <!-- Review Section -->
+        <% if (currUser) { %>
+          <div class="col-6 offset-3">
+            <hr />
+          </div>
+
+          <div class="mt-3">
+            <h4>Leave a Review</h4>
+            <form class="mt-3 needs-validation" novalidate action="/listings/<%= listing._id %>/reviews" method="POST">
+              <div class="mt-3">
+                <label class="form-label" for="rating">Rating</label>
+                <fieldset class="starability-slot">
+                  <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1" checked aria-label="No rating." />
+                  <input type="radio" id="first-rate1" name="review[rating]" value="1" />
+                  <label for="first-rate1" title="Terrible">1 star</label>
+                  <input type="radio" id="first-rate2" name="review[rating]" value="2" />
+                  <label for="first-rate2" title="Not good">2 stars</label>
+                  <input type="radio" id="first-rate3" name="review[rating]" value="3" />
+                  <label for="first-rate3" title="Average">3 stars</label>
+                  <input type="radio" id="first-rate4" name="review[rating]" value="4" />
+                  <label for="first-rate4" title="Very good">4 stars</label>
+                  <input type="radio" id="first-rate5" name="review[rating]" value="5" />
+                  <label for="first-rate5" title="Amazing">5 stars</label>
+                </fieldset>
+              </div>
+              <div class="mb-3">
+                <label class="form-label" for="comment">Comments</label>
+                <textarea class="form-control" name="review[comment]" id="comment" cols="30" rows="5" required></textarea>
+                <div class="invalid-feedback">Please add some comments for review</div>
+              </div>
+              <div class="show-btns d-flex flex-column flex-md-row justify-content-center gap-2 gap-md-3">
+                <button class="btn btn-dark">Submit</button>
+              </div>
+            </form>
+          </div>
+        <% } %>
+
+        <div class="col-6 offset-3">
+          <hr />
+        </div>
+
+        <!-- Reviews Display -->
+        <% if (listing.reviews.length > 0) { %>
+          <div class="mt-3">
+            <h4>All Reviews</h4>
+            <div class="row justify-content-left">
+              <% for (let review of listing.reviews) { %>
+                <div class="col-12 col-md-6 col-lg-6 d-flex mt-3">
+                  <div class="card mb-1 flex-grow-1 shadow-sm">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                      <div>
+                        <div class="d-flex align-items-center mb-2">
+                          <i class="fa-solid fa-circle-user fa-lg me-2" style="color: #ff0000"></i>
+                          <h5 class="card-title mb-0"><%= review.author.username %></h5>
+                        </div>
+                        <p class="starability-result card-text" data-rating="<%= review.rating %>"></p>
+                        <p class="card-text review-comment mb-0"><%= review.comment %></p>
+                      </div>
+                      <small class="text-muted mt-2"><%= new Date(review.createdAt).toLocaleDateString() %></small>
+                      <% if (currUser && currUser._id.equals(review.author._id)) { %>
+                        <form action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE" method="POST">
+                          <button class="btn btn-sm btn-danger mt-2">Delete</button>
+                        </form>
+                      <% } %>
+                    </div>
+                  </div>
+                </div>
+              <% } %>
+            </div>
+          </div>
+
+          <div class="col-6 offset-3">
+            <hr />
+          </div>
+        <% } %>
+
+        <!-- Amenities Section -->
+        <div class="mt-3">
+          <h4>What this place offers</h4>
+          <div class="offers">
+            <i class="ri-restaurant-line"><span> Kitchen</span></i>
+            <i class="ri-car-fill"><span> Parking</span></i>
+            <i class="ri-t-shirt-air-fill"><span> Air conditioning</span></i>
+            <i class="ri-tv-2-line"><span> TV</span></i>
+            <i class="ri-vidicon-line"><span> Security cameras</span></i>
+            <i class="ri-wifi-line"><span> Wifi</span></i>
+          </div>
+          <div class="d-flex justify-content-center mt-2">
+            <button id="offers" type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#exampleModal">
+              Show all amenities
+            </button>
+          </div>
+
+          <!-- Amenities Modal -->
+          <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="exampleModalLabel">What this place offers</h1>
+                </div>
+                <div class="modal-body">
+                  <ul>
+                    <h5>Scenic views</h5>
+                    <li>Lake view</li>
+                    <li>Mountain view</li>
+                    <h5>Accessibility</h5>
+                    <li>Child friendly</li>
+                    <li>Disabled access</li>
+                    <h5>Others</h5>
+                    <li>Essentials</li>
+                    <li>Fire extinguisher</li>
+                  </ul>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Map Section -->
+        <div class="mt-3">
+          <h4>Location on Map</h4>
+          <div id="map" class="show-map" style="height: 300px;"></div>
+        </div>
       </div>
     </div>
   </div>
-  <script src="/js/map.js"></script>
 </body>
